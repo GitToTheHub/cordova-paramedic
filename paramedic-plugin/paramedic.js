@@ -98,6 +98,17 @@ Paramedic.prototype.injectJasmineReporter = function () {
 };
 
 Paramedic.prototype.loadParamedicServerUrl = function () {
+    // First, allow passing logurl directly via query string to avoid path resolution issues.
+    try {
+        const url = new URL(window.location.href);
+        const queryLogUrl = url.searchParams.get('logurl');
+        if (queryLogUrl) {
+            return queryLogUrl;
+        }
+    } catch (ex) {
+        console.log('Unable to parse location for paramedic logurl: ' + ex);
+    }
+
     const candidates = [
         '../medic.json',
         './medic.json',
