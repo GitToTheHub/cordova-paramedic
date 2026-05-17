@@ -98,15 +98,29 @@ Paramedic.prototype.injectJasmineReporter = function () {
 };
 
 Paramedic.prototype.loadParamedicServerUrl = function () {
-    try {
-        // attempt to synchronously load medic config
-        const xhr = new XMLHttpRequest();
-        xhr.open('GET', '../medic.json', false);
-        xhr.send(null);
-        const cfg = JSON.parse(xhr.responseText);
-        return cfg.logurl;
-    } catch (ex) {
-        console.log('Unable to load paramedic server url: ' + ex);
+    const candidates = [
+        '../medic.json',
+        './medic.json',
+        '/medic.json',
+        '../../medic.json'
+    ];
+
+    for (const candidate of candidates) {
+        try {
+            // attempt to synchronously load medic config
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', candidate, false);
+            xhr.send(null);
+
+            if (xhr.status >= 200 && xhr.status < 300 && xhr.responseText) {
+                const cfg = JSON.parse(xhr.responseText);
+                if (cfg && cfg.logurl) {
+                    return cfg.logurl;
+                }
+            }
+        } catch (ex) {
+            console.log(`Unable to load paramedic server url from ${candidate}: ${ex}`);
+        }
     }
 
     throw new Error('[paramedic] Failed to find logurl.');
